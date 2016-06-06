@@ -61,7 +61,11 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed'); // Use _.pick to only pick description and completed
  
  	db.todo.create(body).then(function (todo) {
- 		res.json(todo.toJSON());
+ 		req.user.addTodo(todo).then(function () {
+ 			return todo.reload();
+ 		}).then(function (todo) {
+ 			res.json(todo.toJSON());
+ 		});
  	}, function (e) {
  		res.status(400).json(e);//400 bad request
  	});
