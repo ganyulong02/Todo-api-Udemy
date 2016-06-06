@@ -63,6 +63,27 @@ module.exports = function(sequelize, DataTypes) {
 						reject();
 					});
 				});
+			},
+			findByToken: function (token) {
+				return new Promise(function (resoleve, reject) {
+					try {
+						var decodedJWT = jwt.verify(token, 'qwerty098');
+						var bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc123@#!');
+						var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+
+						user.findById(tokenData.id).then(function (user) {
+							if (user) {
+								resoleve(user);
+							} else {
+								reject();//id provided isn't inside the db
+							}
+						}, function (e) {
+							reject();//database isn't properly connected
+						});
+					} catch (e) {
+						reject();// if token is invalid format
+					}
+				});
 			}
 		},
 		instanceMethods: { //object
